@@ -1,4 +1,4 @@
-import { query } from "@/config/database.js";
+import { query } from "../config/database.js";
 
 export interface Credential {
   id: string;
@@ -11,6 +11,12 @@ export interface Credential {
   updated_at: Date;
 }
 
+export interface CredentialList {
+  id: string;
+  label: string;
+  url: string;
+}
+
 export interface CredentialInput {
   label: string;
   username: string;
@@ -19,7 +25,7 @@ export interface CredentialInput {
   user_id: string;
 }
 
-export async function addCredentials(body: CredentialInput) {
+export async function addCredentialsModel(body: CredentialInput) {
   const { label, username, password, url, user_id } = body;
   const queryText = `INSERT INTO credentials (label, username, password, url, user_id) 
     VALUES ($1, $2, $3, $4, $5) 
@@ -34,9 +40,19 @@ export async function addCredentials(body: CredentialInput) {
   return rows[0];
 }
 
-export async function getCredentials(user_id: string) {}
+export async function getUserCredentialsModel(user_id: string) {
+  const queryText = `SELECT id, label, url FROM credentials WHERE user_id = $1`;
+  const { rows } = await query(queryText, [user_id]);
+  return rows;
+}
 
-export async function updateCredentials(
+export async function getCredentialDetailsModel(credentialId: string) {
+  const queryText = `SELECT * FROM credentials WHERE id = $1`;
+  const { rows } = await query(queryText, [credentialId]);
+  return rows[0];
+}
+
+export async function updateCredentialsModel(
   user_id: string,
   body: CredentialInput
 ) {}

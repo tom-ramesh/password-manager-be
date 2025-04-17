@@ -45,7 +45,7 @@ export async function findByEmail(email: string): Promise<User | null> {
 }
 
 export async function findById(
-  id: number
+  id: string
 ): Promise<UserWithoutPassword | null> {
   const queryText =
     "SELECT id, username, email, created_at FROM users WHERE id = $1";

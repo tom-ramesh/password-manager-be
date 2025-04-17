@@ -20,7 +20,23 @@ export interface ServiceResult<T> {
   error: string | null;
 }
 
-export async function getUserById(id: number): Promise<ServiceResult<User>> {
+export async function createUser(
+  userData: UserInput
+): Promise<ServiceResult<userModel.UserWithoutPassword>> {
+  try {
+    // Add any business logic/validation here
+    const user = await userModel.createUser(userData);
+    return { success: true, data: user, error: null };
+  } catch (error) {
+    return {
+      success: false,
+      data: null,
+      error: "Error creating user: " + (error as Error).message,
+    };
+  }
+}
+
+export async function getUserById(id: string): Promise<ServiceResult<User>> {
   try {
     const user = await userModel.findById(id);
     if (!user) {

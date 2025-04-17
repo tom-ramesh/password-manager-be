@@ -1,26 +1,6 @@
 import { generateToken } from "../utils/jwt.js";
-import {
-  UserInput,
-  UserWithoutPassword,
-  createUser as createUserModel,
-} from "../models/user.model.js";
+import { UserWithoutPassword } from "../models/user.model.js";
 import { getUserByEmail, ServiceResult } from "./user.service.js";
-
-export async function createUser(
-  userData: UserInput
-): Promise<ServiceResult<UserWithoutPassword>> {
-  try {
-    // Add any business logic/validation here
-    const user = await createUserModel(userData);
-    return { success: true, data: user, error: null };
-  } catch (error) {
-    return {
-      success: false,
-      data: null,
-      error: "Error creating user: " + (error as Error).message,
-    };
-  }
-}
 
 export async function loginUser(
   email: string,

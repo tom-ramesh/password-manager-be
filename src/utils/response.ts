@@ -1,12 +1,12 @@
 interface SuccessResponse<T = any> {
-  status: 'success';
+  status: "success";
   statusCode: number;
   message: string;
   data: T;
 }
 
 interface ErrorResponse {
-  status: 'error';
+  status: "error";
   statusCode: number;
   message: string;
   errors: any | null;
@@ -17,14 +17,14 @@ interface ErrorResponse {
  */
 export function successResponse<T = any>(
   data: T,
-  message = 'Success',
+  message = "Success",
   statusCode = 200
 ): SuccessResponse<T> {
   return {
-    status: 'success',
+    status: "success",
     statusCode,
     message,
-    data
+    data,
   };
 }
 
@@ -32,14 +32,14 @@ export function successResponse<T = any>(
  * Create an error response
  */
 export function errorResponse(
-  message = 'Error',
+  message = "Error",
   statusCode = 500,
   errors: any | null = null
 ): ErrorResponse {
   return {
-    status: 'error',
+    status: "error",
     statusCode,
     message,
-    errors
+    errors,
   };
-} 
+}

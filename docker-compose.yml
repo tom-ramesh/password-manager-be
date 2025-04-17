@@ -14,6 +14,7 @@ services:
       - DB_NAME=password_manager
       - JWT_SECRET=secretkey
       - PORT=8080
+      - ENCRYPTION_SECRET_KEY=759c4d948c175b9ae1ddf51e29ef594cbf13443abd0a8572e4449264a7fe925f
     volumes:
       - ./src:/app/src
     depends_on:
