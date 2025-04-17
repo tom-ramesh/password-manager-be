@@ -2,8 +2,10 @@ import { decryptValue, encryptValue } from "../utils/encryption.js";
 import {
   addCredentialsModel,
   CredentialInput,
+  deleteCredentialModel,
   getCredentialDetailsModel,
   getUserCredentialsModel,
+  updateCredentialModel,
 } from "../models/credentials.model.js";
 
 export async function addCredentialsService(data: CredentialInput) {
@@ -62,6 +64,43 @@ export async function getCredentialDetailsService(credentialId: string) {
       data: null,
       error:
         "Error fetching credential details: " +
+        (error instanceof Error ? error.message : "Unknown error"),
+    };
+  }
+}
+
+export async function updateCredentialService(
+  credentialId: string,
+  data: CredentialInput
+) {
+  try {
+    const encryptedData = {
+      ...data,
+      password: encryptValue(data.password),
+    };
+    const result = await updateCredentialModel(credentialId, encryptedData);
+    return { success: true, data: result, error: null };
+  } catch (error) {
+    return {
+      success: false,
+      data: null,
+      error:
+        "Error updating credential: " +
+        (error instanceof Error ? error.message : "Unknown error"),
+    };
+  }
+}
+
+export async function deleteCredentialService(credentialId: string) {
+  try {
+    const result = await deleteCredentialModel(credentialId);
+    return { success: true, data: result, error: null };
+  } catch (error) {
+    return {
+      success: false,
+      data: null,
+      error:
+        "Error deleting credential: " +
         (error instanceof Error ? error.message : "Unknown error"),
     };
   }

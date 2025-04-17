@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import bcrypt from "bcrypt";
 
 const algorithm = "aes-256-cbc";
 const key = Buffer.from(process.env.ENCRYPTION_SECRET_KEY || "", "hex");
@@ -24,4 +25,16 @@ export function decryptValue(encrypted: string) {
   let decrypted = decipher.update(encryptedText, "hex", "utf8");
   decrypted += decipher.final("utf8");
   return decrypted;
+}
+
+export async function hashPassword(password: string) {
+  const saltRounds = 10;
+  return await bcrypt.hash(password, saltRounds);
+}
+
+export async function comparePasswords(
+  password: string,
+  hashedPassword: string
+) {
+  return await bcrypt.compare(password, hashedPassword);
 }

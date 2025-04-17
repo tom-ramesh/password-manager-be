@@ -1,3 +1,4 @@
+import { hashPassword } from "../utils/encryption.js";
 import * as userModel from "../models/user.model.js";
 
 interface User {
@@ -25,7 +26,11 @@ export async function createUser(
 ): Promise<ServiceResult<userModel.UserWithoutPassword>> {
   try {
     // Add any business logic/validation here
-    const user = await userModel.createUser(userData);
+    const hashedPassword = await hashPassword(userData.password);
+    const user = await userModel.createUser({
+      ...userData,
+      password: hashedPassword,
+    });
     return { success: true, data: user, error: null };
   } catch (error) {
     return {

@@ -1,6 +1,7 @@
 import { generateToken } from "../utils/jwt.js";
 import { UserWithoutPassword } from "../models/user.model.js";
 import { getUserByEmail, ServiceResult } from "./user.service.js";
+import { comparePasswords } from "../utils/encryption.js";
 
 export async function loginUser(
   email: string,
@@ -15,8 +16,8 @@ export async function loginUser(
     }
 
     const user = userResult.data;
-
-    if (!user || user.password !== password) {
+    const isPasswordValid = await comparePasswords(password, user?.password!);
+    if (!user || !isPasswordValid) {
       return { success: false, data: null, error: "Invalid email or password" };
     }
 

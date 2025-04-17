@@ -16,7 +16,7 @@ export async function initializeDatabase(): Promise<void> {
         username VARCHAR(50) NOT NULL UNIQUE,
         email VARCHAR(100) NOT NULL UNIQUE,
         password VARCHAR(255) NOT NULL,
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT (NOW() AT TIME ZONE 'UTC')
       )
     `);
 
@@ -29,8 +29,22 @@ export async function initializeDatabase(): Promise<void> {
         password VARCHAR(255) NOT NULL,
         url VARCHAR(255),
         user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT (NOW() AT TIME ZONE 'UTC'),
+        updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT (NOW() AT TIME ZONE 'UTC')
+      )
+    `);
+
+    //Create logs table
+    await query(`
+      CREATE TABLE IF NOT EXISTS logs (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        credential_id UUID NOT NULL REFERENCES credentials(id) ON DELETE CASCADE,
+        action VARCHAR(255) NOT NULL,
+        old_data JSONB,
+        new_data JSONB,
+        ip_address VARCHAR(45) NOT NULL,
+        created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT (NOW() AT TIME ZONE 'UTC')
       )
     `);
 

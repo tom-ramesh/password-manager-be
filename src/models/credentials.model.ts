@@ -52,9 +52,27 @@ export async function getCredentialDetailsModel(credentialId: string) {
   return rows[0];
 }
 
-export async function updateCredentialsModel(
-  user_id: string,
+export async function updateCredentialModel(
+  credentialId: string,
   body: CredentialInput
-) {}
+) {
+  const { label, username, password, url } = body;
+  const queryText = `UPDATE credentials 
+    SET label = $1, username = $2, password = $3, url = $4, updated_at = NOW() AT TIME ZONE 'UTC'
+    WHERE id = $5 
+    RETURNING id, created_at, updated_at`;
+  const { rows } = await query(queryText, [
+    label,
+    username,
+    password,
+    url,
+    credentialId,
+  ]);
+  return rows[0];
+}
 
-export async function deleteCredentials(user_id: string) {}
+export async function deleteCredentialModel(credentialId: string) {
+  const queryText = `DELETE FROM credentials WHERE id = $1`;
+  const { rows } = await query(queryText, [credentialId]);
+  return rows[0];
+}
