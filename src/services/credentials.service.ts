@@ -7,6 +7,10 @@ import {
   getUserCredentialsModel,
   updateCredentialModel,
 } from "../models/credentials.model.js";
+import { addLogModel } from "../models/logs.model.js";
+import { LOGS_ACTION_TYPE } from "../types/enums/logs.enum.js";
+import { addLogService } from "./logs.service.js";
+import { pool } from "../config/database.js";
 
 export async function addCredentialsService(data: CredentialInput) {
   try {
@@ -14,7 +18,19 @@ export async function addCredentialsService(data: CredentialInput) {
       ...data,
       password: encryptValue(data.password),
     };
+
     const result = await addCredentialsModel(encryptedData);
+    if (result) {
+      const logData = {
+        userId: data.userId,
+        credentialId: result?.id,
+        actionType: LOGS_ACTION_TYPE.CREATE,
+        oldData: null,
+        newData: encryptedData,
+        ipAddress: "",
+      };
+      await addLogModel(logData);
+    }
     return { success: true, data: result, error: null };
   } catch (error) {
     return {
@@ -27,9 +43,9 @@ export async function addCredentialsService(data: CredentialInput) {
   }
 }
 
-export async function getUserCredentialsService(user_id: string) {
+export async function getUserCredentialsService(userId: string) {
   try {
-    const result = await getUserCredentialsModel(user_id);
+    const result = await getUserCredentialsModel(userId);
 
     if (!result || result.length === 0) {
       return { success: true, data: [], error: null };
@@ -79,7 +95,42 @@ export async function updateCredentialService(
       password: encryptValue(data.password),
     };
     const result = await updateCredentialModel(credentialId, encryptedData);
-    return { success: true, data: result, error: null };
+
+    if (!result) {
+      return {
+        success: false,
+        data: null,
+        error: "Failed to update credential",
+      };
+    }
+
+    const existingCredential = await getCredentialDetailsModel(credentialId);
+    if (!existingCredential) {
+      return {
+        success: false,
+        data: null,
+        error: "Credential not found",
+      };
+    }
+    Object.assign(encryptedData, {
+      createdAt: existingCredential.created_at,
+      updatedAt: result.updated_at,
+    });
+    // Create log entry
+    const logData = {
+      userId: existingCredential.user_id,
+      credentialId: result.id,
+      actionType: LOGS_ACTION_TYPE.UPDATE,
+      oldData: existingCredential,
+      newData: encryptedData,
+      ipAddress: "",
+    };
+    await addLogService(logData);
+    return {
+      success: true,
+      data: result,
+      error: null,
+    };
   } catch (error) {
     return {
       success: false,
@@ -92,16 +143,52 @@ export async function updateCredentialService(
 }
 
 export async function deleteCredentialService(credentialId: string) {
+  const client = await pool.connect();
   try {
+    await client.query("BEGIN");
+
+    const existingCredential = await getCredentialDetailsModel(credentialId);
+    if (!existingCredential) {
+      await client.query("ROLLBACK");
+      return {
+        success: false,
+        data: null,
+        error: "Credential not found",
+      };
+    }
+
+    const logData = {
+      userId: existingCredential.user_id,
+      credentialId: existingCredential.id,
+      actionType: LOGS_ACTION_TYPE.DELETE,
+      oldData: existingCredential,
+      newData: null,
+      ipAddress: "",
+    };
+    await addLogService(logData);
+
     const result = await deleteCredentialModel(credentialId);
+    if (!result) {
+      await client.query("ROLLBACK");
+      return {
+        success: false,
+        data: null,
+        error: "Failed to delete credential",
+      };
+    }
+
+    await client.query("COMMIT");
     return { success: true, data: result, error: null };
   } catch (error) {
+    await client.query("ROLLBACK");
     return {
       success: false,
       data: null,
       error:
-        "Error deleting credential: " +
+        "Error in delete operation: " +
         (error instanceof Error ? error.message : "Unknown error"),
     };
+  } finally {
+    client.release();
   }
 }

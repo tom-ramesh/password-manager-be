@@ -1,0 +1,7 @@
+export enum LOGS_ACTION_TYPE {
+  CREATE = "CREATE",
+  UPDATE = "UPDATE",
+  DELETE = "DELETE",
+}
+
+export type TLOG_ACTION_TYPE = `${LOGS_ACTION_TYPE}`;

@@ -39,7 +39,7 @@ export async function initializeDatabase(): Promise<void> {
       CREATE TABLE IF NOT EXISTS logs (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-        credential_id UUID NOT NULL REFERENCES credentials(id) ON DELETE CASCADE,
+        credential_id UUID REFERENCES credentials(id) ON DELETE SET NULL,
         action VARCHAR(255) NOT NULL,
         old_data JSONB,
         new_data JSONB,
